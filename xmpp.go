@@ -611,7 +611,12 @@ func (c *Client) SendHtml(chat Chat) (n int, err error) {
 	return fmt.Fprintf(c.conn, "<message to='%s' type='%s' xml:lang='en'>"+
 		"<body>%s</body>"+
 		"<html xmlns='http://jabber.org/protocol/xhtml-im'><body xmlns='http://www.w3.org/1999/xhtml'>%s</body></html></message>",
-		xmlEscape(chat.Remote), xmlEscape(chat.Type), xmlEscape(chat.Text), chat.Text)
+		xmlEscape(chat.Remote), xmlEscape(chat.Type), xmlEscape(chat.Text), strings.Replace(chat.Text, "&", "&amp;", -1))
+}
+
+// SetStatus set the status infomation
+func (c *Client) SetStatus(status, info string) (n int, err error) {
+	return fmt.Fprintf(c.conn, "<presence xml:lang='en'><show>%s</show><status>%s</status></presence>", status, info)
 }
 
 // Roster asks for the chat roster.
