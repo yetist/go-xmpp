@@ -45,3 +45,18 @@ func (c *Client) LeaveMUC(jid string) {
 	fmt.Fprintf(c.conn, "<presence from='%s' to='%s' type='unavailable' />",
 		c.jid, xmlEscape(jid))
 }
+
+//xep-0249 2.1
+func (c *Client) InviteToMUC(srcJid, destJid, roomJid, password, reason string) {
+	if password != "" {
+		password = "password='" + xmlEscape(password) + "'"
+	}
+	if reason != "" {
+		reason = "reason='" + xmlEscape(reason) + "'"
+	}
+	fmt.Fprintf(c.conn, "<message from='%s' to='%s'>\n"+
+		"<x xmlns='jabber:x:conference'"+
+		"jid='%s' %s %s/>"+
+		"</message>",
+		xmlEscape(srcJid), xmlEscaoe(destJid), xmlEscape(roomJid), password, reason)
+}
