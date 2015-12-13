@@ -58,5 +58,5 @@ func (c *Client) InviteToMUC(srcJid, destJid, roomJid, password, reason string) 
 		"<x xmlns='jabber:x:conference'"+
 		"jid='%s' %s %s/>"+
 		"</message>",
-		xmlEscape(srcJid), xmlEscaoe(destJid), xmlEscape(roomJid), password, reason)
+		xmlEscape(srcJid), xmlEscape(destJid), xmlEscape(roomJid), password, reason)
 }
