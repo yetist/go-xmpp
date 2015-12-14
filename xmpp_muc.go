@@ -46,17 +46,26 @@ func (c *Client) LeaveMUC(jid string) {
 		c.jid, xmlEscape(jid))
 }
 
-//xep-0249 2.1
-func (c *Client) InviteToMUC(srcJid, destJid, roomJid, password, reason string) {
+//xep-0045
+func (c *Client) InviteToMUC(jid, nick, destJid, roomJid, password, reason string) {
+	if nick == "" {
+		nick = c.jid
+	}
 	if password != "" {
-		password = "password='" + xmlEscape(password) + "'"
+		password = "<password>" + xmlEscape(password) + "</password>"
 	}
 	if reason != "" {
-		reason = "reason='" + xmlEscape(reason) + "'"
+		reason = xmlEscape(reason)
 	}
-	fmt.Fprintf(c.conn, "<message from='%s' to='%s'>\n"+
-		"<x xmlns='jabber:x:conference'"+
-		"jid='%s' %s %s/>"+
+	fmt.Fprintf(c.conn, "<message from='%s/%s' to='%s'>\n"+
+		"<x xmlns='%s'>\n"+
+		"<invite to='%s'>\n"+
+		"<reason>\n"+
+		reason+
+		"</reason>\n"+
+		"</invite>\n"+
+		password+
+		"</x>\n"+
 		"</message>",
-		xmlEscape(srcJid), xmlEscape(destJid), xmlEscape(roomJid), password, reason)
+		xmlEscape(jid), xmlEscape(nick), xmlEscape(roomJid), nsMUCUser, destJid)
 }
