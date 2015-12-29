@@ -583,6 +583,14 @@ func (c *Client) Recv() (stanza interface{}, err error) {
 				Stamp:  stamp,
 			}
 			return chat, nil
+		case *clientIQ:
+			var r Roster
+			if v.Query.Item != nil {
+				for _, item := range v.Query.Item {
+					r = append(r, Contact{item.Jid, item.Name, item.Group})
+				}
+			}
+			return Chat{Type: "roster", Roster: r}, nil
 		case *clientQuery:
 			var r Roster
 			for _, item := range v.Item {
@@ -739,6 +747,7 @@ type clientIQ struct { // info/query
 	ID      string   `xml:",attr"`
 	To      string   `xml:",attr"`
 	Type    string   `xml:",attr"` // error, get, result, set
+	Query   clientQuery
 	Error   clientError
 	Bind    bindBind
 }
@@ -752,15 +761,17 @@ type clientError struct {
 }
 
 type clientQuery struct {
-	Item []rosterItem
+	XMLName xml.Name     `xml:"query"`
+	Ver     string       `xml:"ver,attr"`
+	Item    []rosterItem `xml:"item"`
 }
 
 type rosterItem struct {
 	XMLName      xml.Name `xml:"jabber:iq:roster item"`
-	Jid          string   `xml:",attr"`
-	Name         string   `xml:",attr"`
-	Subscription string   `xml:",attr"`
-	Group        []string
+	Jid          string   `xml:"jid,attr"`
+	Name         string   `xml:"name,attr"`
+	Subscription string   `xml:"subscription,attr"`
+	Group        []string `xml:"group"`
 }
 
 // Scan XML token stream to find next StartElement.
@@ -786,7 +797,6 @@ func next(p *xml.Decoder) (xml.Name, interface{}, error) {
 	if err != nil {
 		return xml.Name{}, nil, err
 	}
-
 	// Put it in an interface and allocate one.
 	var nv interface{}
 	switch se.Name.Space + " " + se.Name.Local {
